@@ -2,7 +2,7 @@
 
 LANChat lightweight and privacy oriented Local Area Network chatting app.
 
- #Features
+ # Features
 
 - Encrypted messages
 
