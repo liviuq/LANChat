@@ -1,4 +1,5 @@
 hello:
-	gcc -Wall -Werror source/main.c -o ~/Documents/Dev/LANChat/bin/LANChat
+	gcc -Wall source/server.c -o ~/Documents/LANChat/bin/server
+	gcc -Wall source/client.c -o ~/Documents/LANChat/bin/client
 
 	#test for new ssh key#tester
