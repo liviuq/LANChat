@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <unistd.h>
-#include <gtk/gtk.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
-int main(int argc, char *argv[]) 
+int
+main(int argc, char* argv[])
 {
-	printf("hello");
-	return 0;
-	
+    printf("Hello world!\n");
+    return 0;
 }
