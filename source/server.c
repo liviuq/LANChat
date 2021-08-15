@@ -19,6 +19,8 @@ main(int argc, char* argv[])
         printf("Usage: %s <port>\n",*argv);
         exit(EXIT_FAILURE);
     }
+    else 
+        printf("[SERVER] Parsed input parameters\n");
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if(sockfd < 0)
@@ -26,6 +28,8 @@ main(int argc, char* argv[])
         printf("[SERVER] Error opening socket\n");
         exit(EXIT_FAILURE);
     } 
+    else 
+        printf("[SERVER] Opened socket\n");
 
     memset(&serv_addr, 0, sizeof(serv_addr));
     portno = atoi(argv[1]);
@@ -38,12 +42,16 @@ main(int argc, char* argv[])
         printf("[SERVER] Error on binding\n");
         exit(EXIT_FAILURE);
     }
+    else 
+        printf("[SERVER] Binding successfull\n");
 
     if(listen(sockfd, 5) < 0)
     {
         printf("[SERVER] Error on listening\n");
         exit(EXIT_FAILURE);
     }
+    else 
+        printf("[SERVER] Listening on port %d\n", portno);
 
     clientlen = sizeof(cli_addr);
     newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clientlen);
@@ -52,6 +60,8 @@ main(int argc, char* argv[])
         printf("[SERVER] Error on accepting\n");
         exit(EXIT_FAILURE);
     }
+    else 
+        printf("[SERVER] Accepted incoming connection\n");
 
     bzero(buffer, 256);
     n = read(newsockfd, buffer, 255);
@@ -60,7 +70,10 @@ main(int argc, char* argv[])
         printf("[SERVER] Error on reading\n");
         exit(EXIT_FAILURE);
     }
-    else printf("The message is: %s\n", buffer);
+    else
+        printf("[SERVER] Read %d bytes\n", n);
+
+    printf("The message is: %s\n", buffer);
 
     return 0;
 }

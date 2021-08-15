@@ -22,21 +22,26 @@ main(int argc, char* argv[])
         printf("Usage: %s <hostname> <port>\n",*argv);
         exit(EXIT_FAILURE);
     }
-
+    else 
+        printf("[CLIENT] Parsed input parameters\n");
     portno = atoi(argv[2]);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if(sockfd < 0)
     {
-        printf("[SERVER] Error opening socket\n");
+        printf("[CLIENT] Error opening socket\n");
         exit(EXIT_FAILURE);
     } 
+    else 
+        printf("[CLIENT] Opened socket on port %d\n", portno);
 
     server = gethostbyname(argv[1]);
     if(server == NULL)
     {
         printf("[CLIENT] No such host\n");
         exit(EXIT_FAILURE);
-    }
+    } 
+    else 
+        printf("[CLIENT] Trying to connect to %s\n", server->h_name);
 
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -46,7 +51,10 @@ main(int argc, char* argv[])
     {
         printf("[CLIENT] Error connecting\n");
         exit(EXIT_FAILURE);
-    }
+    } 
+    else 
+        printf("[CLIENT] Connected to socket\n");
+
     printf("Enter the message: ");
     bzero(buffer, 256);
     fgets(buffer, 255, stdin);
@@ -55,14 +63,20 @@ main(int argc, char* argv[])
     {
         printf("[CLIENT] Error writing to socket\n");
         exit(EXIT_FAILURE);
-    }
+    } 
+    else 
+        printf("[CLIENT] Written %d bytes\n", n);
+
     bzero(buffer, 256);
     n = read(sockfd, buffer, 255);
     if(n < 0)
     {
         printf("[CLIENT] Error reading from socket\n");
         exit(EXIT_FAILURE);
-    }
+    } 
+    else 
+        printf("[CLIENT] Read %d bytes\n", n);
+
     printf("%s\n", buffer);
 
     return 0;
