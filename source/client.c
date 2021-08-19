@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -8,65 +10,91 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#define PORT "5050"
+
 int main(int argc, char *argv[])
 {
-    int sockfd, portno, n;
-    struct sockaddr_in serv_addr;
-    struct hostent *server;
-
-    char *buffer = malloc(sizeof(char) * 256);
-    bzero(buffer, 256);
-    if (argc < 3)
+    //checking for arguments
+    if (argc < 2)
     {
-        printf("Usage: %s <hostname> <port>\n", *argv);
+        printf("Usage: %s <hostname>\n", *argv);
         exit(EXIT_FAILURE);
     }
     else
         printf("[CLIENT] Parsed input parameters\n");
-    portno = atoi(argv[2]);
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
+
+    int status;                 //return value of getaddrinfo()
+    struct addrinfo hints;      //setup the basic socket settings
+    struct addrinfo *result;    //here we have the hints, IP and port
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    
+    if((status = getaddrinfo(argv[1], PORT, &hints, &result)) != 0)
+    {
+        printf("[%s CLIENT] Error at getaddrinfo(): %s\n",__TIME__, gai_strerror(status));
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        printf("[%s CLIENT] Finished getting the information\n", __TIME__);
+    }
+
+    int socketfd;       //server socket, this will receive incoming connections
+    socketfd = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+    //domain -> AF_INET which means IPv4 socket
+    //type -> SOCK_STREAM which means TCP socket
+    //protocol -> usually 0
+    if (socketfd < 0)
     {
         printf("[CLIENT] Error opening socket\n");
         exit(EXIT_FAILURE);
     }
     else
-        printf("[CLIENT] Opened socket on port %d\n", portno);
-
-    server = gethostbyname(argv[1]);
-    if (server == NULL)
     {
-        printf("[CLIENT] No such host\n");
-        exit(EXIT_FAILURE);
+        printf("[CLIENT] Opened socket on port %d\n", atoi(PORT));
     }
-    else
-        printf("[CLIENT] Trying to connect to %s\n", server->h_name);
 
-    bzero((char *)&serv_addr, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    bcopy((char *)server->h_addr_list[0], (char *)&serv_addr.sin_addr.s_addr, server->h_length);
-    serv_addr.sin_port = htons(portno);
-    if (connect(sockfd, (const struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    //connecting to the server
+    if (connect(socketfd, result->ai_addr, result->ai_addrlen) < 0)
     {
         printf("[CLIENT] Error connecting\n");
         exit(EXIT_FAILURE);
     }
     else
+    {
         printf("[CLIENT] Connected to socket\n");
+    }
+
+    //freeing the linked list
+    freeaddrinfo(result);
+
+    //storage for incoming data
+    char *buffer = malloc(256 * sizeof(char));
+    int n; //number of bytes written 
 
     while (1)
     {
         printf("Enter the message: ");
-        bzero(buffer, 256);
+        memset(buffer, 0, 256);
         fgets(buffer, 255, stdin);
-        n = write(sockfd, buffer, strlen(buffer));
-        if (n < 0)
+        if ((n = write(socketfd, buffer, strlen(buffer))) <= 0)
         {
             printf("[CLIENT] Error writing to socket\n");
             exit(EXIT_FAILURE);
         }
         else
+        {
             printf("[CLIENT] Written %d bytes\n", n);
+        }
+
+        if (read(socketfd, buffer, 256) <= 0)
+        {
+            printf("[%s CLIENT] Error on reading\n", __TIME__);
+            exit(EXIT_FAILURE);
+        }
+        printf("=> %s", buffer);
+
     }
 
     return 0;
