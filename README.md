@@ -24,7 +24,7 @@ Server installation:
 make
 ```
 
-User installation:
+Client installation:
 
 ```sh
 make
@@ -35,7 +35,7 @@ make
 The server should be running with this command:
 
 ```sh
-./bin/server <port>
+./bin/server 
 ```
 
 ## Running the client
@@ -43,6 +43,5 @@ The server should be running with this command:
 The client should be running with this command:
 
 ```sh
-./bin/server <hostname> <port>
+./bin/client <hostname>
 ```
-
