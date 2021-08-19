@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -5,74 +7,97 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
+
+#define PORT "5050"
+#define BACKLOG 10
 
 int main(int argc, char *argv[])
 {
-    int sockfd, newsockfd, portno, clientlen, n;
-    char *buffer = malloc(sizeof(char) * 256);
-
-    struct sockaddr_in serv_addr, cli_addr;
-
-    if (argc < 2)
+    if (argc != 1)
     {
-        printf("Usage: %s <port>\n", *argv);
+        printf("Usage: %s\n", *argv);
+        exit(EXIT_FAILURE);
+    }
+
+    int status;
+    struct addrinfo hints;
+    struct addrinfo *serverinfo;
+
+    //setting up structures
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = PF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    //pass NULL for getaddrinfo() for localhost listening(later)
+    if((status = getaddrinfo(NULL, PORT, &hints, &serverinfo)) != 0)
+    {
+        printf("[%s SERVER] Error at getaddressinfo(): %s\n",__TIME__, gai_strerror(status));
         exit(EXIT_FAILURE);
     }
     else
-        printf("[SERVER] Parsed input parameters\n");
-
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
     {
-        printf("[SERVER] Error opening socket\n");
+        printf("[%s SERVER] Finished getting the information\n", __TIME__);
+    }
+
+    int socketfd;
+    if((socketfd = socket(serverinfo->ai_family, serverinfo->ai_socktype, serverinfo->ai_protocol)) == -1)
+    {
+        printf("[%s SERVER] Error at socket syscall\n", __TIME__);
         exit(EXIT_FAILURE);
     }
     else
-        printf("[SERVER] Opened socket\n");
-
-    memset(&serv_addr, 0, sizeof(serv_addr));
-    portno = atoi(argv[1]);
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(portno);
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-
-    if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
-        printf("[SERVER] Error on binding\n");
+        printf("[%s SERVER] Finished creating socket\n", __TIME__);
+    }
+
+    if(bind(socketfd, serverinfo->ai_addr, serverinfo->ai_addrlen) == -1)
+    {
+       printf("[%s SERVER] Error on binding\n", __TIME__);
+
+       exit(EXIT_FAILURE);
+    }
+    else
+    {
+        printf("[%s SERVER] Binding successfull\n", __TIME__);
+    }
+
+    if (listen(socketfd, 5) < 0)
+    {
+        printf("[%s SERVER] Error on listening\n", __TIME__); 
         exit(EXIT_FAILURE);
     }
     else
-        printf("[SERVER] Binding successfull\n");
-
-    if (listen(sockfd, 5) < 0)
     {
-        printf("[SERVER] Error on listening\n");
+        printf("[%s SERVER] Listening on port %d\n", __TIME__, atoi(PORT));
+    }
+
+    int clientsocketfd;
+    struct sockaddr_in clientaddress;
+    socklen_t clientlength;
+    clientlength= sizeof(struct sockaddr_in);
+    clientsocketfd = accept(socketfd, (struct sockaddr *)&clientaddress, &clientlength);
+    if (clientsocketfd < 0)
+    {
+        printf("[%s SERVER] Error on accepting\n", __TIME__);
         exit(EXIT_FAILURE);
     }
     else
-        printf("[SERVER] Listening on port %d\n", portno);
+        printf("[%s SERVER] Accepted incoming connection\n", __TIME__);
 
-    clientlen = sizeof(cli_addr);
-    newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, (socklen_t *restrict)&clientlen);
-    if (newsockfd < 0)
-    {
-        printf("[SERVER] Error on accepting\n");
-        exit(EXIT_FAILURE);
-    }
-    else
-        printf("[SERVER] Accepted incoming connection\n");
+    freeaddrinfo(serverinfo);
+
+    char *buffer = malloc(256 * sizeof(char));
 
     while (1)
     {
-        bzero(buffer, 256);
-        n = read(newsockfd, buffer, 255);
-        if (n < 0)
+        memset(buffer, 0, 256);
+        if (read(clientsocketfd, buffer, 256) < 0)
         {
-            printf("[SERVER] Error on reading\n");
+            printf("[%s SERVER] Error on reading\n", __TIME__);
             exit(EXIT_FAILURE);
         }
-        else
-            printf("[SERVER] Read %d bytes\n", n);
 
         printf("The message is: %s\n", buffer);
     }
