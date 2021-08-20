@@ -15,13 +15,15 @@
 int main(int argc, char *argv[])
 {
     //checking for arguments
-    if (argc < 2)
+    if (argc != 2)
     {
         printf("Usage: %s <hostname>\n", *argv);
         exit(EXIT_FAILURE);
     }
     else
+    {
         printf("[CLIENT] Parsed input parameters\n");
+    }
 
     int status;                 //return value of getaddrinfo()
     struct addrinfo hints;      //setup the basic socket settings
@@ -96,6 +98,9 @@ int main(int argc, char *argv[])
         printf("=> %s", buffer);
 
     }
+    
+    //shuting down the connection to the server
+    shutdown(socketfd, SHUT_RDWR);
 
     return 0;
 }

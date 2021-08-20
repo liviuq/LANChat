@@ -128,5 +128,10 @@ int main(int argc, char *argv[])
             printf("[SERVER] Written %d bytes\n", n);
         }
     }
+
+    //closing incoming connections and the client connection
+    close(socketfd);
+    close(clientsocketfd);
+
     return 0;
 }
