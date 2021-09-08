@@ -1,6 +1,6 @@
 # LANChat
 
-LANChat lightweight and privacy oriented Local Area Network chatting app.
+A lightweight and privacy oriented Local Area Network chatting app.
 
 ## Features(to be added)
 
@@ -18,13 +18,7 @@ LANChat lightweight and privacy oriented Local Area Network chatting app.
 
 LANChat requires a local server to be hosted on the LAN before users can join.
 
-Server installation:
-
-```sh
-make
-```
-
-Client installation:
+Server and client installation:
 
 ```sh
 make
@@ -32,7 +26,7 @@ make
 
 ## Running the server
 
-The server should be running with this command:
+The server should be ran with this command:
 
 ```sh
 ./bin/server 
@@ -40,8 +34,8 @@ The server should be running with this command:
 
 ## Running the client
 
-The client should be running with this command:
+The client should be ran with this command:
 
 ```sh
-./bin/client <hostname>
+./bin/client <hostname or ip of the server>
 ```
