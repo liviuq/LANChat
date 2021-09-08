@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 
         if (read(socketfd, buffer, 256) <= 0)
         {
-            printf("[%s CLIENT] Error on reading\n", __TIME__);
+            printf("[CLIENT] Error on reading\n");
             exit(EXIT_FAILURE);
         }
         printf("=> %s", buffer);
