@@ -28,18 +28,19 @@ int main(int argc, char *argv[])
     int status;                 //return value of getaddrinfo()
     struct addrinfo hints;      //setup the basic socket settings
     struct addrinfo *result;    //here we have the hints, IP and port
-    memset(&hints, 0, sizeof(struct addrinfo));
+    memset(&hints, 0, sizeof(struct addrinfo)); //memset to 0 as described in the documentation
+                                                //the function bzero is obsolete, referenced in addrinfo
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     
     if((status = getaddrinfo(argv[1], PORT, &hints, &result)) != 0)
     {
-        printf("[%s CLIENT] Error at getaddrinfo(): %s\n",__TIME__, gai_strerror(status));
+        printf("[CLIENT] Error at getaddrinfo(): %s\n", gai_strerror(status));
         exit(EXIT_FAILURE);
     }
     else
     {
-        printf("[%s CLIENT] Finished getting the information\n", __TIME__);
+        printf("[CLIENT] Finished getting the information\n");
     }
 
     int socketfd;       //server socket, this will receive incoming connections
@@ -58,6 +59,8 @@ int main(int argc, char *argv[])
     }
 
     //connecting to the server
+    //we should iterate through the linked list ~result~ so we can pick a valid entry
+    //as the first entry might be invalid.
     if (connect(socketfd, result->ai_addr, result->ai_addrlen) < 0)
     {
         printf("[CLIENT] Error connecting\n");
@@ -73,13 +76,21 @@ int main(int argc, char *argv[])
 
     //storage for incoming data
     char *buffer = malloc(256 * sizeof(char));
-    int n; //number of bytes written 
+    //number of bytes written 
+    int n;
 
-    while (1)
+    //loop while you want to exchange messages
+    for(;;) //as in the example from getaddrinfo(3)
     {
         printf("Enter the message: ");
         memset(buffer, 0, 256);
-        fgets(buffer, 255, stdin);
+        char* ret;
+        if( (ret = fgets(buffer, 255, stdin)) == NULL)
+        {
+            printf("[CLIENT] Error connecting\n");
+            exit(EXIT_FAILURE);
+        }
+
         if ((n = write(socketfd, buffer, strlen(buffer))) <= 0)
         {
             printf("[CLIENT] Error writing to socket\n");

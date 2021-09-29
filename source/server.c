@@ -117,7 +117,14 @@ int main(int argc, char *argv[])
 
         printf("Enter the message: ");
         memset(buffer, 0, 256);
-        fgets(buffer, 255, stdin);
+
+        char* ret;
+        if( (ret = fgets(buffer, 255, stdin)) == NULL)
+        {
+            printf("[SERVER] Error connecting\n");
+            exit(EXIT_FAILURE);
+        }
+
         if ((n = write(clientsocketfd, buffer, strlen(buffer))) <= 0)
         {
             printf("[SERVER] Error writing to socket\n");
