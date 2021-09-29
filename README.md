@@ -21,7 +21,7 @@ LANChat requires a local server to be hosted on the LAN before users can join.
 Server and client installation:
 
 ```sh
-make
+make all
 ```
 
 ## Running the server
